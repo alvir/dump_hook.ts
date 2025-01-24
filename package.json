@@ -1,0 +1,25 @@
+{
+  "name": "dump_hook.ts",
+  "version": "1.0.0",
+  "description": "Dumps to cache you backgrounds. We use it to enhance performance of our e2e tests",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "jest",
+    "build": "tsc"
+  },
+  "keywords": [
+    "e2e-tests",
+    "data-dumps",
+    "performance",
+    "acceptance-tests"
+  ],
+  "author": "Alexander Ryazantsev <shurik.v.r@gmail.com>",
+  "homepage": "https://github.com/alvir/dump_hook.ts",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/jest": "^29.5.14",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.2.5",
+    "typescript": "^5.7.3"
+  }
+}
