@@ -1,14 +1,15 @@
 {
   "name": "dump_hook.ts",
-  "version": "1.0.0-beta.2",
+  "version": "1.0.0-beta.3",
   "description": "Dumps to cache you backgrounds. We use it to enhance performance of our e2e tests",
   "main": "dist/index.js",
-  "types": "dist/types.d.ts",
   "scripts": {
     "test": "jest",
     "build": "tsc",
-    "ci": "npm run build",
-    "format": "prettier --write ."
+    "ci": "npm run build && npm run check-format",
+    "format": "prettier --write .",
+    "check-format": "prettier --check .",
+    "check-exports": "attw --pack ."
   },
   "keywords": [
     "e2e-tests",
@@ -20,6 +21,7 @@
   "homepage": "https://github.com/alvir/dump_hook.ts",
   "license": "ISC",
   "devDependencies": {
+    "@arethetypeswrong/cli": "^0.17.3",
     "@types/jest": "^29.5.14",
     "jest": "^29.7.0",
     "postgres": "^3.4.5",
