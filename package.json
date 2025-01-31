@@ -1,12 +1,12 @@
 {
   "name": "dump_hook.ts",
-  "version": "1.0.0-beta.3",
+  "version": "1.0.0-beta.4",
   "description": "Dumps to cache you backgrounds. We use it to enhance performance of our e2e tests",
   "main": "dist/index.js",
   "scripts": {
     "test": "jest",
     "build": "tsc",
-    "ci": "npm run build && npm run check-format",
+    "ci": "npm run build && npm run check-format && npm run check-exports",
     "format": "prettier --write .",
     "check-format": "prettier --check .",
     "check-exports": "attw --pack ."

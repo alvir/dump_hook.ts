@@ -20,22 +20,22 @@ describe("execute", () => {
     rmSync("tmp", { recursive: true });
   });
 
-  test("create default dumps location", async () => {
+  it("creates default dumps location", async () => {
     expect(existsSync("tmp/dump_hook")).toBeFalsy();
-    await dumpHook!.execute("first", async () => {});
+    await dumpHook.execute("first", async () => {});
     expect(existsSync("tmp/dump_hook")).toBeTruthy();
   });
 
-  test("create dump file", async () => {
+  it("creates dump file", async () => {
     const filepath = "tmp/dump_hook/first.dump";
     expect(existsSync(filepath)).toBeFalsy();
-    await dumpHook!.execute("first", async () => {});
+    await dumpHook.execute("first", async () => {});
     expect(existsSync(filepath)).toBeTruthy();
   });
 
-  test("create dump", async () => {
+  it("creates dump", async () => {
     expect(async () => {
-      await dumpHook!.execute("first_dump", async () => {});
+      await dumpHook.execute("first_dump", async () => {});
     }).not.toThrow();
   });
 
@@ -51,14 +51,14 @@ describe("execute", () => {
       await sql.end();
     });
 
-    test("fill from callback", async () => {
+    it("fills from callback", async () => {
       await dumpHook.execute("with_data", async () => {
         await sql`insert into t values('a', 'b')`;
       });
       expect(await sql`select * from t`).toEqual([{ a: "a", b: "b" }]);
     });
 
-    test("don't launch call back", async () => {
+    it("doesn't launch call back", async () => {
       await dumpHook.execute("with_data", async () => {
         await sql`insert into t values('a', 'b')`;
       });
@@ -67,6 +67,48 @@ describe("execute", () => {
 
       await dumpHook.execute("with_data", async () => {});
       expect(await sql`select * from t`).toEqual([{ a: "a", b: "b" }]);
+
+      await dumpHook.execute("with_data", async () => {});
+      expect(await sql`select * from t`).toEqual([
+        { a: "a", b: "b" },
+        { a: "a", b: "b" }
+      ]);
+    });
+
+    describe("excludeTables", () => {
+      beforeEach(async () => {
+        await sql`create table t2 (c text, d text)`;
+        await sql`insert into t2 values('c', 'd')`;
+        dumpHook = new DumpHook({ database: database, excludeTables: ["t2"] });
+        await dumpHook.execute("with_data", async () => {
+          await sql`insert into t values('a', 'b')`;
+        });
+      });
+
+      it("returns the same for previous tables", async () => {
+        expect(await sql`select * from t`).toEqual([{ a: "a", b: "b" }]);
+      });
+
+      it("returns the existing values for excluded tables", async () => {
+        expect(await sql`select * from t2`).toEqual([{ c: "c", d: "d" }]);
+      });
+
+      describe("on next execution", () => {
+        beforeEach(async () => {
+          await dumpHook.execute("with_data", async () => {});
+        });
+
+        it("works the same for not ignored tables", async () => {
+          expect(await sql`select * from t`).toEqual([
+            { a: "a", b: "b" },
+            { a: "a", b: "b" }
+          ]);
+        });
+
+        it("doesn't change ignored tables", async () => {
+          expect(await sql`select * from t2`).toEqual([{ c: "c", d: "d" }]);
+        });
+      });
     });
   });
 });

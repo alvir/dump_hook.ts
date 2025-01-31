@@ -16,7 +16,7 @@ export class DumpHook {
   private readonly settings: Required<Settings>;
 
   constructor(settings: Settings) {
-    this.settings = { ...settings, ...DumpHook.DEFAULT_SETTINGS };
+    this.settings = { ...DumpHook.DEFAULT_SETTINGS, ...settings };
   }
 
   async execute(fileName: string, callback: () => Promise<void>) {
