@@ -1,6 +1,6 @@
 {
   "name": "dump_hook.ts",
-  "version": "1.0.0-beta.4",
+  "version": "1.0.0-beta.5",
   "description": "Dumps to cache you backgrounds. We use it to enhance performance of our e2e tests",
   "main": "dist/index.js",
   "scripts": {

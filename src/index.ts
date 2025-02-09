@@ -5,12 +5,14 @@ import * as path from "node:path";
 type Settings = {
   dumpsLocation?: string;
   excludeTables?: string[];
+  schemas?: string[];
   database: string;
 };
 
 export class DumpHook {
   public static readonly DEFAULT_SETTINGS = {
     dumpsLocation: "tmp/dump_hook",
+    schemas: ["public"],
     excludeTables: []
   };
   private readonly settings: Required<Settings>;
@@ -48,6 +50,9 @@ export class DumpHook {
     ];
     for (const table of this.settings.excludeTables) {
       args.push("-T", table);
+    }
+    for (const schema of this.settings.schemas) {
+      args.push("-n", schema);
     }
     execSync(`pg_dump ${args.join(" ")}`);
   }

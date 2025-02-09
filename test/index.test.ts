@@ -58,7 +58,7 @@ describe("execute", () => {
       expect(await sql`select * from t`).toEqual([{ a: "a", b: "b" }]);
     });
 
-    it("doesn't launch call back", async () => {
+    it("doesn't launch callback", async () => {
       await dumpHook.execute("with_data", async () => {
         await sql`insert into t values('a', 'b')`;
       });
@@ -107,6 +107,75 @@ describe("execute", () => {
 
         it("doesn't change ignored tables", async () => {
           expect(await sql`select * from t2`).toEqual([{ c: "c", d: "d" }]);
+        });
+      });
+    });
+
+    describe("schemas", () => {
+      beforeEach(async () => {
+        await sql`create schema other`;
+        await sql`create table other.t (a text, b text)`;
+        await sql`insert into other.t values('other_a', 'other_b')`;
+      });
+
+      describe("by default", () => {
+        beforeEach(async () => {
+          await dumpHook.execute("with_data", async () => {
+            await sql`insert into public.t values('a', 'b')`;
+          });
+        });
+
+        it("works the same", async () => {
+          expect(await sql`select * from other.t`).toEqual([
+            { a: "other_a", b: "other_b" }
+          ]);
+          expect(await sql`select * from public.t`).toEqual([
+            { a: "a", b: "b" }
+          ]);
+        });
+
+        it("dumps just public", async () => {
+          await dumpHook.execute("with_data", async () => {});
+          expect(await sql`select * from other.t`).toEqual([
+            { a: "other_a", b: "other_b" }
+          ]);
+          expect(await sql`select * from public.t`).toEqual([
+            { a: "a", b: "b" },
+            { a: "a", b: "b" }
+          ]);
+        });
+      });
+
+      describe("with additional schema", () => {
+        beforeEach(async () => {
+          dumpHook = new DumpHook({
+            database: database,
+            schemas: ["public", "other"]
+          });
+          await dumpHook.execute("with_data", async () => {
+            await sql`insert into public.t values('a', 'b')`;
+          });
+        });
+
+        it("works the same", async () => {
+          expect(await sql`select * from other.t`).toEqual([
+            { a: "other_a", b: "other_b" }
+          ]);
+          expect(await sql`select * from public.t`).toEqual([
+            { a: "a", b: "b" }
+          ]);
+        });
+
+        it("dumps all mentioned schemas", async () => {
+          await dumpHook.execute("with_data", async () => {});
+          expect(await sql`select * from other.t`).toEqual([
+            { a: "other_a", b: "other_b" },
+            { a: "other_a", b: "other_b" }
+          ]);
+          expect(await sql`select * from public.t`).toEqual([
+            { a: "a", b: "b" },
+            { a: "a", b: "b" }
+          ]);
         });
       });
     });
