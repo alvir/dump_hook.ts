@@ -179,5 +179,56 @@ describe("execute", () => {
         });
       });
     });
+
+    describe("recreate", () => {
+      beforeEach(async () => {
+        await dumpHook.execute("with_data", async () => {
+          await sql`insert into t values('a', 'b')`;
+        });
+      });
+
+      describe("by default", () => {
+        it("doesn't change db", async () => {
+          expect(await sql`select * from t`).toEqual([{ a: "a", b: "b" }]);
+          await sql`delete from t`;
+          await dumpHook.execute("with_data", async () => {
+            await sql`insert into t values('c', 'd')`;
+          });
+          expect(await sql`select * from t`).toEqual([{ a: "a", b: "b" }]);
+        })
+      });
+
+      describe("with recreate in params", () => {
+        beforeEach(() => {
+          dumpHook = new DumpHook({ database: database, recreate: true });
+        })
+
+        it("changes db", async () => {
+          expect(await sql`select * from t`).toEqual([{ a: "a", b: "b" }]);
+          await sql`delete from t`;
+          await dumpHook.execute("with_data", async () => {
+            await sql`insert into t values('c', 'd')`;
+          });
+          expect(await sql`select * from t`).toEqual([{ a: "c", b: "d" }]);
+        })
+
+        describe("when executing several times", () => {
+          beforeEach(async () => {
+            await sql`delete from t`;
+            await dumpHook.execute("with_data", async () => {
+              await sql`insert into t values('c', 'd')`;
+            });
+          })
+
+          it("uses dump", async () => {
+            await sql`delete from t`;
+            await dumpHook.execute("with_data", async () => {
+              await sql`insert into t values('e', 'f')`;
+            });
+            expect(await sql`select * from t`).toEqual([{ a: "c", b: "d" }]);
+          })
+        })
+      });
+    });
   });
 });

@@ -1,23 +1,30 @@
 import { execSync } from "node:child_process";
-import { existsSync } from "fs";
+import { existsSync, rmSync } from "fs";
 import * as path from "node:path";
 
 type Settings = {
   dumpsLocation?: string;
   excludeTables?: string[];
   schemas?: string[];
+  recreate?: boolean;
   database: string;
 };
 
 export class DumpHook {
+  private recreatedDumps: string[] = [];
+
   public static readonly DEFAULT_SETTINGS = {
     dumpsLocation: "tmp/dump_hook",
     schemas: ["public"],
-    excludeTables: []
+    excludeTables: [],
+    recreate: false
   };
   private readonly settings: Required<Settings>;
 
   constructor(settings: Settings) {
+    if(settings.recreate === undefined) {
+      settings.recreate = process.env.DUMP_HOOK === "recreate"
+    }
     this.settings = { ...DumpHook.DEFAULT_SETTINGS, ...settings };
   }
 
@@ -25,6 +32,11 @@ export class DumpHook {
     if (!existsSync(this.settings.dumpsLocation)) await this.createCacheDir();
 
     const filePath = path.join(this.settings.dumpsLocation, `${fileName}.dump`);
+    if (this.toRecreate(filePath)) {
+      rmSync(filePath, { });
+      this.recreatedDumps.push(filePath);
+    }
+
     if (existsSync(filePath)) {
       await this.restore(filePath);
     } else {
@@ -59,5 +71,9 @@ export class DumpHook {
 
   private async restore(filePath: string) {
     execSync(`pg_restore -d ${this.settings.database} ${filePath}`);
+  }
+
+  private toRecreate(filePath: string) {
+    return this.settings.recreate && !this.recreatedDumps.includes(filePath)
   }
 }
