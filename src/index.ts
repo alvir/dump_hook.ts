@@ -22,8 +22,8 @@ export class DumpHook {
   private readonly settings: Required<Settings>;
 
   constructor(settings: Settings) {
-    if(settings.recreate === undefined) {
-      settings.recreate = process.env.DUMP_HOOK === "recreate"
+    if (settings.recreate === undefined) {
+      settings.recreate = process.env.DUMP_HOOK === "recreate";
     }
     this.settings = { ...DumpHook.DEFAULT_SETTINGS, ...settings };
   }
@@ -33,7 +33,7 @@ export class DumpHook {
 
     const filePath = path.join(this.settings.dumpsLocation, `${fileName}.dump`);
     if (this.toRecreate(filePath)) {
-      rmSync(filePath, { });
+      rmSync(filePath, {});
       this.recreatedDumps.push(filePath);
     }
 
@@ -74,6 +74,6 @@ export class DumpHook {
   }
 
   private toRecreate(filePath: string) {
-    return this.settings.recreate && !this.recreatedDumps.includes(filePath)
+    return this.settings.recreate && !this.recreatedDumps.includes(filePath);
   }
 }

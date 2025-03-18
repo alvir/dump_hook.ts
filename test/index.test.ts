@@ -194,13 +194,13 @@ describe("execute", () => {
             await sql`insert into t values('c', 'd')`;
           });
           expect(await sql`select * from t`).toEqual([{ a: "a", b: "b" }]);
-        })
+        });
       });
 
       describe("with recreate in params", () => {
         beforeEach(() => {
           dumpHook = new DumpHook({ database: database, recreate: true });
-        })
+        });
 
         it("changes db", async () => {
           expect(await sql`select * from t`).toEqual([{ a: "a", b: "b" }]);
@@ -209,7 +209,7 @@ describe("execute", () => {
             await sql`insert into t values('c', 'd')`;
           });
           expect(await sql`select * from t`).toEqual([{ a: "c", b: "d" }]);
-        })
+        });
 
         describe("when executing several times", () => {
           beforeEach(async () => {
@@ -217,7 +217,7 @@ describe("execute", () => {
             await dumpHook.execute("with_data", async () => {
               await sql`insert into t values('c', 'd')`;
             });
-          })
+          });
 
           it("uses dump", async () => {
             await sql`delete from t`;
@@ -225,19 +225,19 @@ describe("execute", () => {
               await sql`insert into t values('e', 'f')`;
             });
             expect(await sql`select * from t`).toEqual([{ a: "c", b: "d" }]);
-          })
-        })
+          });
+        });
       });
 
       describe("with recreate in env variables", () => {
         beforeEach(() => {
           process.env.DUMP_HOOK = "recreate";
           dumpHook = new DumpHook({ database: database });
-        })
+        });
 
         afterEach(() => {
           process.env.DUMP_HOOK = undefined;
-        })
+        });
 
         it("changes db", async () => {
           expect(await sql`select * from t`).toEqual([{ a: "a", b: "b" }]);
@@ -246,7 +246,7 @@ describe("execute", () => {
             await sql`insert into t values('c', 'd')`;
           });
           expect(await sql`select * from t`).toEqual([{ a: "c", b: "d" }]);
-        })
+        });
 
         describe("when executing several times", () => {
           beforeEach(async () => {
@@ -255,7 +255,7 @@ describe("execute", () => {
             await dumpHook.execute("with_data", async () => {
               await sql`insert into t values('c', 'd')`;
             });
-          })
+          });
 
           it("uses dump", async () => {
             await sql`delete from t`;
@@ -263,8 +263,8 @@ describe("execute", () => {
               await sql`insert into t values('e', 'f')`;
             });
             expect(await sql`select * from t`).toEqual([{ a: "c", b: "d" }]);
-          })
-        })
+          });
+        });
       });
     });
   });
